@@ -1,6 +1,8 @@
 
 alko-catalogs/*
 
+!alko-catalogs/.gitkeep 
+
 # Created by https://www.gitignore.io/api/git,osx,node,linux,vagrant,eclipse,windows,sublimetext,intellij+all,visualstudio,visualstudiocode
 
 ### Git ###
