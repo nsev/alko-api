@@ -41,24 +41,10 @@ const readCatalog = (dateStr) => {
   const path = getCatalogPath(dateStr);
   console.log("Checking if cached file exists at ", path);
   return new Promise((res, rej) => {
-    // if (fs.existsSync(path)) {
-    //   console.log(fs.existsSync(path));
-    //   const foo = xlsx.parse(fs.readFileSync(path));
-    //   console.log(foo);
-    //   return res(foo);
-    // }
 
     const url = alko._getUrl(dateStr);
     console.log("Did not find cached catalog. Querying from Alko with url", url);
     return res(fetchCatalog(url));
-    // fs.readFile(path, 'utf8', function (err, data) {
-    //   if (err) {
-    //     console.log("Did not find cached catalog. Querying from Alko");
-    //     const url = alko._getUrl(path);
-    //     return res(fetchCatalog(url));
-    //   }
-    //   return res(data);
-    // });
   });
 };
 
@@ -113,38 +99,8 @@ alko.getCatalog = function(){
       res(cachedData);
     });
   }
-  // const url = alko._getUrl(dateStr);
   return readCatalog(dateStr)
-    // fetch(url)
-    // .then((response) => new Promise((res, rej) => {
-    //     if (response.status >= 400) {
-    //         throw new Error("Bad response from server");
-    //     }
-    //     const { stream, path } = createAlkoCatalogStream();
-    //     let timer;
-    //     response.body.pipe(stream)
-    //       .on('open', () => {
-    //         timer = setTimeout(() => {
-    //           stream.close()
-    //           rej({reason: 'Timed out downloading file', meta: {url}})
-    //         }, FILE_DOWNLOAD_TIMEOUT)
-    //       })
-    //       .on('error', (error) => {
-    //         clearTimeout(timer)
-    //         rej({reason: 'Unable to download file', meta: {url, error}})
-    //       })
-    //       .on('finish', () => {
-    //         clearTimeout(timer)
-    //         res(path);
-    //       });
-    // }))
     .then((parsedResponse) => {
-        // const parsedResponse = alko._readResponse(path)
-        // parsedResponse
-        // .forEach((entry) => {
-        //   const gg = entry.data[4];
-        //   console.log(gg);
-        // });
         return alkoCatalogToJson(parsedResponse, {
           startIndex: 4,
           columns: [
