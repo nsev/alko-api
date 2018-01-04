@@ -1,11 +1,12 @@
 const xlsx = require('node-xlsx').default;
 const fetch = require('node-fetch');
 const fs = require('fs');
+const _ = require('lodash');
 
 let alko = {};
 let cachedData;
 const FILE_DOWNLOAD_TIMEOUT = 10000;
-const CATALOG_PATH = './alko-catalogs/';
+const CATALOG_PATH = `./alko-catalogs/`;
 
 alko._getUrl = function(date){
   // date format 27.12.2017
@@ -14,15 +15,17 @@ alko._getUrl = function(date){
 };
 
 alko._readResponse = function(xlsFile){
-  // console.log( body);
+  console.log( xlsFile);
   const workSheetsFromBuffer = xlsx.parse(xlsFile);
   return workSheetsFromBuffer;
 };
 
 const createDateStr = () => {
   const date = new Date();
-  const days = date.getHours() <= 8 ? date.getDate() - 1 : date.getDate();
-  return `${days}.${date.getMonth()+1}.${date.getFullYear()}`;
+  const daysNum = date.getHours() <= 8 ? date.getDate() - 1 : date.getDate();
+  const months = ('0' + (date.getMonth() + 1)).slice(-2)
+  const days = ('0' + daysNum).slice(-2)
+  return `${days}.${months}.${date.getFullYear()}`;
 };
 
 const getCatalogPath = (dateStr) => {
@@ -48,33 +51,26 @@ const readCatalog = (dateStr) => {
   });
 };
 
-const fetchCatalog = (url) => {
-  return fetch(url)
-    .then((response) => new Promise((res, rej) => {
-        if (response.status >= 400) {
-            throw new Error("Bad response from server");
-        }
-        const { stream, path } = createAlkoCatalogStream();
-        let timer;
-        response.body.pipe(stream)
-          .on('open', () => {
-            timer = setTimeout(() => {
-              stream.close();
-              rej({reason: 'Timed out downloading file', meta: {url}});
-            }, FILE_DOWNLOAD_TIMEOUT)
-          })
-          .on('error', (error) => {
-            clearTimeout(timer);
-            rej({reason: 'Unable to download file', meta: {url, error}});
-          })
-          .on('finish', () => {
-            clearTimeout(timer);
-            res(path);
-          });
-    }))
-    .then((path) => {
-       return alko._readResponse(path)
+const fetchCatalog = async (url) => {
+  const res = await fetch(url);
+  const data = await new Promise((resolve, reject) => {
+    const { stream, path } = createAlkoCatalogStream();
+    res.body.pipe(stream);
+    res.body.on("error", (err) => {
+      stream.close();
+      reject(err);
     });
+    stream.on("finish", function() {
+      stream.close();
+      resolve(path);
+    });
+  });
+
+  if(_.isString(data)){
+    return alko._readResponse(data)
+  }
+
+  return data;
 };
 
 const alkoCatalogToJson = (rawData, dataFormat) => {

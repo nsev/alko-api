@@ -6,7 +6,7 @@ var dao = require('../alko/alko.dao');
 
 const SUPPORTED_QUERY_PARAMS = ['producer', 'grape'];
 
-router.get('/v1/products', function(req, res, next) {
+router.get('/products', function(req, res, next) {
   dao.getCatalog().then((data) => {
     const queryParams = req.query;
     let result;
@@ -30,7 +30,7 @@ router.get('/v1/products', function(req, res, next) {
   });
 });
 
-router.get('/v1/products/:productId', function(req, res, next) {
+router.get('products/:productId', function(req, res, next) {
   dao.getCatalog().then((data) => {
     res.set('Content-Type', 'application/json');
     const productId = req.params.productId;
